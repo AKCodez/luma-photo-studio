@@ -4,12 +4,15 @@ import { useCallback, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, X, Image as ImageIcon, Plus, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { upload } from "@vercel/blob/client";
 import { cn } from "@/lib/utils";
 
 export interface UploadedRef {
   publicPath: string;
   fileName: string;
 }
+
+const MAX_BYTES = 100 * 1024 * 1024;
 
 interface Props {
   values: UploadedRef[];
@@ -35,20 +38,39 @@ export function ReferenceDropzone({
       toast.error(`${file.name}: not an image`);
       return null;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error(`${file.name}: too large (max 10MB)`);
+    if (file.size > MAX_BYTES) {
+      toast.error(`${file.name}: too large (max 100MB)`);
       return null;
     }
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) {
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-      toast.error(data.error ?? "Upload failed");
-      return null;
+    try {
+      const blob = await upload(`uploads/${file.name}`, file, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+        contentType: file.type,
+      });
+      return { publicPath: blob.url, fileName: file.name };
+    } catch (err) {
+      const directMsg = err instanceof Error ? err.message : "Direct upload failed";
+
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(data.error ?? `Upload failed (${res.status})`);
+        }
+        const data = (await res.json()) as { publicPath: string; fileName: string };
+        return { publicPath: data.publicPath, fileName: data.fileName };
+      } catch (fallbackErr) {
+        toast.error(
+          `${file.name}: ${
+            fallbackErr instanceof Error ? fallbackErr.message : directMsg
+          }`
+        );
+        return null;
+      }
     }
-    const data = (await res.json()) as { publicPath: string; fileName: string };
-    return { publicPath: data.publicPath, fileName: data.fileName };
   }, []);
 
   const addFiles = useCallback(
