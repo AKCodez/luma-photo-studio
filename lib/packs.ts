@@ -27,7 +27,7 @@ export const PACKS: Pack[] = [
   },
   {
     id: "yellow-town",
-    name: "Yellow Town",
+    name: "Simpsons-inspired",
     tagline: "Resident of a fictional cartoon town",
     description:
       "Classic 1990s American yellow-skin animated sitcom look. Hand-drawn 2D cels, four-fingered characters with big round white eyes and overbite, bold black outlines, flat primary-colour palette. Cameos by every familiar small-town archetype.",
