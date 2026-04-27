@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { Header } from "./Header";
 import { ReferenceDropzone, type UploadedRef } from "./ReferenceDropzone";
+import { ReferenceStrip } from "./ReferenceStrip";
 import { ModePicker } from "./ModePicker";
 import { AspectControl } from "./AspectControl";
 import { PackGrid } from "./PackGrid";
@@ -220,7 +221,15 @@ export function Stage({ initialManifest }: Props) {
       <Header onReset={reset} />
 
       <div className="mx-auto w-full max-w-7xl px-5 md:px-10">
-        <StepIndicator current={stepIndex} />
+        <div className="flex flex-wrap items-center justify-between gap-4 py-6">
+          <StepIndicator current={stepIndex} />
+          {step !== "upload" && references.length > 0 && (
+            <ReferenceStrip
+              references={references}
+              onChange={() => setStep("upload")}
+            />
+          )}
+        </div>
 
         <AnimatePresence mode="wait">
           {step === "upload" && (
@@ -439,7 +448,7 @@ function BackBar({ onBack }: { onBack: () => void }) {
 function StepIndicator({ current }: { current: number }) {
   const steps = ["Reference", "Direction", "Scenes", "Generating", "Gallery"];
   return (
-    <div className="flex items-center gap-3 py-6">
+    <div className="flex flex-wrap items-center gap-3">
       {steps.map((label, i) => {
         const active = i <= current;
         return (
