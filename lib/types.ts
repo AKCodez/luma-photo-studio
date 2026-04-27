@@ -40,9 +40,8 @@ export interface ShootManifest {
   packId?: string | null;
   surpriseTheme?: string | null;
   aspectRatio: AspectRatio;
-  referenceUrl: string;
-  referenceCdnUrl?: string | null;
-  referenceFileName: string;
+  referenceUrls: string[];
+  referenceFileNames: string[];
   images: ShootImage[];
 }
 

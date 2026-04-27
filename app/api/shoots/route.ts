@@ -13,15 +13,19 @@ interface CreateShootBody {
   surpriseTheme?: string;
   scenes?: string[];
   aspectRatio: AspectRatio;
-  referenceUrl: string;
-  referenceFileName: string;
+  referenceUrls: string[];
+  referenceFileNames: string[];
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as CreateShootBody;
-    if (!body.referenceUrl) {
-      return NextResponse.json({ error: "Missing referenceUrl" }, { status: 400 });
+    const refs = (body.referenceUrls ?? []).filter(Boolean).slice(0, 3);
+    if (refs.length === 0) {
+      return NextResponse.json(
+        { error: "At least one reference image is required" },
+        { status: 400 }
+      );
     }
 
     let scenes: string[] = body.scenes ?? [];
@@ -43,8 +47,8 @@ export async function POST(req: NextRequest) {
       packId: body.packId ?? null,
       surpriseTheme: body.surpriseTheme ?? null,
       aspectRatio: body.aspectRatio,
-      referenceUrl: body.referenceUrl,
-      referenceFileName: body.referenceFileName,
+      referenceUrls: refs,
+      referenceFileNames: (body.referenceFileNames ?? []).slice(0, refs.length),
       prompts: scenes,
     };
 

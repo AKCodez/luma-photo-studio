@@ -78,9 +78,10 @@ export async function POST(req: NextRequest) {
     const gen = await startSceneGeneration({
       prompt: editPrompt,
       aspectRatio: base.aspectRatio,
-      referenceUrl: base.referenceUrl,
+      referenceUrls: base.referenceUrls,
       modifyImageUrl: sourceUrl,
       modifyWeight: 0.05,
+      enrich: false,
     });
     variant.generationId = gen.id;
 

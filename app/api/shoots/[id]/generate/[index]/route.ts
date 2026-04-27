@@ -40,7 +40,7 @@ export async function POST(
     const gen = await startSceneGeneration({
       prompt,
       aspectRatio: base.aspectRatio,
-      referenceUrl: base.referenceUrl,
+      referenceUrls: base.referenceUrls,
     });
 
     await writeImageState(id, {

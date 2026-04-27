@@ -27,8 +27,8 @@ export interface ShootBase {
   packId?: string | null;
   surpriseTheme?: string | null;
   aspectRatio: AspectRatio;
-  referenceUrl: string;
-  referenceFileName: string;
+  referenceUrls: string[];
+  referenceFileNames: string[];
   prompts: string[];
 }
 
@@ -211,8 +211,8 @@ export async function readManifest(
     packId: base.packId,
     surpriseTheme: base.surpriseTheme,
     aspectRatio: base.aspectRatio,
-    referenceUrl: base.referenceUrl,
-    referenceFileName: base.referenceFileName,
+    referenceUrls: base.referenceUrls,
+    referenceFileNames: base.referenceFileNames,
     images,
   };
 }

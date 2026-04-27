@@ -50,13 +50,13 @@ interface Props {
 export function Stage({ initialManifest }: Props) {
   const router = useRouter();
   const [step, setStep] = useState<Step>(initialManifest ? "gallery" : "upload");
-  const [reference, setReference] = useState<UploadedRef | null>(
+  const [references, setReferences] = useState<UploadedRef[]>(
     initialManifest
-      ? {
-          publicPath: initialManifest.referenceUrl,
-          fileName: initialManifest.referenceFileName,
-        }
-      : null
+      ? initialManifest.referenceUrls.map((url, i) => ({
+          publicPath: url,
+          fileName: initialManifest.referenceFileNames[i] ?? `reference-${i + 1}`,
+        }))
+      : []
   );
   const [mode, setMode] = useState<ShootMode | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
@@ -69,16 +69,15 @@ export function Stage({ initialManifest }: Props) {
 
   const reset = useCallback(() => {
     setStep("upload");
-    setReference(null);
+    setReferences([]);
     setMode(null);
     setManifest(null);
     setEditing(null);
     router.push("/");
   }, [router]);
 
-  const handleUpload = useCallback((ref: UploadedRef | null) => {
-    setReference(ref);
-    if (ref) setStep("mode");
+  const handleReferences = useCallback((refs: UploadedRef[]) => {
+    setReferences(refs);
   }, []);
 
   const handleMode = useCallback((m: ShootMode) => {
@@ -98,8 +97,8 @@ export function Stage({ initialManifest }: Props) {
     surpriseTheme?: string;
     aspect?: AspectRatio;
   }) {
-    if (!reference) {
-      toast.error("Upload a reference photo first.");
+    if (references.length === 0) {
+      toast.error("Upload at least one reference photo first.");
       return;
     }
     const aspect = opts.aspect ?? aspectRatio;
@@ -114,8 +113,8 @@ export function Stage({ initialManifest }: Props) {
           surpriseTheme: opts.surpriseTheme,
           scenes: opts.scenes,
           aspectRatio: aspect,
-          referenceUrl: reference.publicPath,
-          referenceFileName: reference.fileName,
+          referenceUrls: references.map((r) => r.publicPath),
+          referenceFileNames: references.map((r) => r.fileName),
         }),
       });
     } catch (err) {
@@ -230,14 +229,18 @@ export function Stage({ initialManifest }: Props) {
                 <div className="space-y-4">
                   <span className="cap text-ember">Step 01 · Reference</span>
                   <h1 className="font-display text-5xl md:text-7xl tracking-tightest text-paper">
-                    Drop one photo of your face.
+                    Drop up to 3 photos.
                   </h1>
                   <p className="mx-auto max-w-md text-base text-paper-dim">
-                    From this single reference, the studio will produce a 12-image
-                    shoot — your face locked in across every scene.
+                    Front-facing works best. Add 2–3 different angles for a
+                    stronger likeness lock across every generated scene.
                   </p>
                 </div>
-                <ReferenceDropzone value={reference} onChange={handleUpload} />
+                <ReferenceDropzone
+                  values={references}
+                  onChange={handleReferences}
+                  onContinue={() => setStep("mode")}
+                />
               </div>
             </motion.section>
           )}
@@ -251,12 +254,12 @@ export function Stage({ initialManifest }: Props) {
                     Choose how to shoot.
                   </h2>
                 </div>
-                {reference && (
+                {references.length > 0 && (
                   <button
                     onClick={() => setStep("upload")}
                     className="hidden md:flex items-center gap-2 text-[12px] text-paper-mute transition hover:text-paper"
                   >
-                    <ArrowLeft className="h-3.5 w-3.5" /> change reference
+                    <ArrowLeft className="h-3.5 w-3.5" /> change references
                   </button>
                 )}
               </div>
