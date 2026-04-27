@@ -41,6 +41,7 @@ export async function POST(
       prompt,
       aspectRatio: base.aspectRatio,
       referenceUrls: base.referenceUrls,
+      style: base.style,
     });
 
     await writeImageState(id, {

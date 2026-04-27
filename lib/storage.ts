@@ -5,6 +5,7 @@ import { put, head } from "@vercel/blob";
 import type {
   AspectRatio,
   GenerationState,
+  PackStyle,
   ShootImage,
   ShootImageVariant,
   ShootManifest,
@@ -30,6 +31,7 @@ export interface ShootBase {
   referenceUrls: string[];
   referenceFileNames: string[];
   prompts: string[];
+  style?: PackStyle;
 }
 
 export interface ImageState {

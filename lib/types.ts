@@ -45,6 +45,8 @@ export interface ShootManifest {
   images: ShootImage[];
 }
 
+export type PackStyle = "photo" | "illustration";
+
 export interface Pack {
   id: string;
   name: string;
@@ -53,6 +55,7 @@ export interface Pack {
   accentColor: string;
   scenes: string[];
   defaultAspectRatio?: AspectRatio;
+  style?: PackStyle;
 }
 
 export interface LumaCharacterRef {

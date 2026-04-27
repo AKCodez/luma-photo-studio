@@ -29,10 +29,12 @@ export async function POST(req: NextRequest) {
     }
 
     let scenes: string[] = body.scenes ?? [];
+    let packStyle: "photo" | "illustration" | undefined;
     if (body.mode === "pack" && body.packId) {
       const pack = getPack(body.packId);
       if (!pack) return NextResponse.json({ error: "Unknown pack" }, { status: 400 });
       scenes = pack.scenes;
+      packStyle = pack.style;
     }
     scenes = scenes.map((s) => s.trim()).filter(Boolean).slice(0, 12);
     if (scenes.length === 0) {
@@ -50,6 +52,7 @@ export async function POST(req: NextRequest) {
       referenceUrls: refs,
       referenceFileNames: (body.referenceFileNames ?? []).slice(0, refs.length),
       prompts: scenes,
+      style: packStyle,
     };
 
     await writeBase(base);

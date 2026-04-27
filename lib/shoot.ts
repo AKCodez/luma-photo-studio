@@ -2,6 +2,7 @@ import type {
   AspectRatio,
   LumaCharacterRef,
   LumaModifyImageRef,
+  PackStyle,
 } from "./types";
 import { createImageGeneration } from "./luma";
 
@@ -13,17 +14,27 @@ export interface BuildPayloadOpts {
   characterWeight?: number;
   modifyWeight?: number;
   enrich?: boolean;
+  style?: PackStyle;
 }
 
-const IDENTITY_PRESERVE =
-  "Subject's face must match the reference photo exactly — same exact facial structure, eye shape, eye colour, eyebrow shape, nose, lips, chin, hairline and skin tone. Photorealistic likeness, sharp focus on eyes.";
+const IDENTITY_PHOTO =
+  "Subject's face must match the reference photo exactly — same facial structure, eye shape and colour, eyebrows, nose, lips, jawline, hairline and skin tone. Sharp focus on the eyes.";
+
+const IDENTITY_ILLUSTRATION =
+  "Stylized portrait, but the subject's facial features must clearly match the reference photo — same eye shape, eyebrow shape, nose shape, lips, jawline and hairline are recognisable through the illustration. Strong likeness.";
 
 const AESTHETIC_FLATTER =
-  "Athletic toned physique, lean and slim build, defined jawline, clear skin, healthy glow, confident posture, flattering pose and camera angle, magazine-grade composition, subtle natural smile if appropriate.";
+  "Athletic toned physique, lean slim build, defined jawline, clear skin, healthy glow, confident posture, flattering pose and camera angle, magazine-grade composition.";
 
-export function formatScenePrompt(scene: string): string {
+export function formatScenePrompt(
+  scene: string,
+  style: PackStyle = "photo"
+): string {
   const trimmed = scene.trim().replace(/\s+/g, " ");
-  return `${trimmed} ${AESTHETIC_FLATTER} ${IDENTITY_PRESERVE}`;
+  if (style === "illustration") {
+    return `${trimmed} ${AESTHETIC_FLATTER} ${IDENTITY_ILLUSTRATION}`;
+  }
+  return `${trimmed} ${AESTHETIC_FLATTER} ${IDENTITY_PHOTO}`;
 }
 
 export function buildCharacterRef(
@@ -40,7 +51,10 @@ export function buildModifyRef(url: string, weight = 0.05): LumaModifyImageRef {
 
 export async function startSceneGeneration(opts: BuildPayloadOpts) {
   const refs = (opts.referenceUrls ?? []).filter(Boolean);
-  const prompt = opts.enrich === false ? opts.prompt : formatScenePrompt(opts.prompt);
+  const prompt =
+    opts.enrich === false
+      ? opts.prompt
+      : formatScenePrompt(opts.prompt, opts.style ?? "photo");
   return createImageGeneration({
     prompt,
     aspectRatio: opts.aspectRatio,
