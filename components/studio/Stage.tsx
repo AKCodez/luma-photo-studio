@@ -98,30 +98,58 @@ export function Stage({ initialManifest }: Props) {
     surpriseTheme?: string;
     aspect?: AspectRatio;
   }) {
-    if (!reference) return;
+    if (!reference) {
+      toast.error("Upload a reference photo first.");
+      return;
+    }
     const aspect = opts.aspect ?? aspectRatio;
-    const res = await fetch("/api/shoots", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        mode,
-        packId: opts.packId,
-        surpriseTheme: opts.surpriseTheme,
-        scenes: opts.scenes,
-        aspectRatio: aspect,
-        referenceUrl: reference.publicPath,
-        referenceFileName: reference.fileName,
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch("/api/shoots", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          packId: opts.packId,
+          surpriseTheme: opts.surpriseTheme,
+          scenes: opts.scenes,
+          aspectRatio: aspect,
+          referenceUrl: reference.publicPath,
+          referenceFileName: reference.fileName,
+        }),
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Network error");
+      return;
+    }
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       toast.error(data.error ?? "Failed to start shoot");
       return;
     }
-    const data = (await res.json()) as { id: string };
+    const data = (await res.json()) as { id: string; count: number };
     setStep("generating");
-    void hydrateManifest(data.id);
+    await hydrateManifest(data.id);
     router.push(`/shoots/${data.id}`, { scroll: false });
+    void fanOutGenerations(data.id, data.count);
+  }
+
+  async function fanOutGenerations(shootId: string, count: number) {
+    await Promise.allSettled(
+      Array.from({ length: count }, (_, i) =>
+        fetch(`/api/shoots/${shootId}/generate/${i}`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+        }).then(async (r) => {
+          if (!r.ok) {
+            const data = (await r.json().catch(() => ({}))) as { error?: string };
+            console.warn(`Scene ${i + 1} failed:`, data.error);
+          }
+        }).catch((err) => {
+          console.warn(`Scene ${i + 1} threw:`, err);
+        })
+      )
+    );
   }
 
   async function hydrateManifest(id: string) {
@@ -137,7 +165,7 @@ export function Stage({ initialManifest }: Props) {
     let cancelled = false;
     async function tick() {
       while (!cancelled) {
-        await new Promise((r) => setTimeout(r, 1800));
+        await new Promise((r) => setTimeout(r, 2200));
         if (cancelled) break;
         try {
           const res = await fetch(`/api/shoots/${manifest!.id}`, {
@@ -151,6 +179,12 @@ export function Stage({ initialManifest }: Props) {
           );
           if (settled) {
             setStep("gallery");
+            const failed = next.images.filter((i) => i.state === "failed");
+            if (failed.length === next.images.length) {
+              toast.error("All scenes failed. Check failure reasons on each card.");
+            } else if (failed.length > 0) {
+              toast.warning(`${failed.length} of ${next.images.length} scenes failed.`);
+            }
             break;
           }
         } catch {

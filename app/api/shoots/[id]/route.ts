@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readManifest } from "@/lib/storage";
 
+export const fetchCache = "force-no-store";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 

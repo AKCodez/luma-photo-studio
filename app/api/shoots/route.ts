@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { newShootId, createShoot, writeManifest, saveImage } from "@/lib/storage";
-import { startSceneGeneration, toAbsoluteUrl } from "@/lib/shoot";
-import { pollGeneration, downloadImage } from "@/lib/luma";
-import type { AspectRatio, ShootImage, ShootManifest, ShootMode } from "@/lib/types";
+import { newShootId, writeBase, writeImageState, type ShootBase } from "@/lib/storage";
+import type { AspectRatio, ShootMode } from "@/lib/types";
 import { getPack } from "@/lib/packs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 30;
 
 interface CreateShootBody {
   mode: ShootMode;
@@ -38,9 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const id = newShootId();
-    const referenceAbsoluteUrl = toAbsoluteUrl(req, body.referenceUrl);
-
-    const manifest: ShootManifest = {
+    const base: ShootBase = {
       id,
       createdAt: new Date().toISOString(),
       mode: body.mode,
@@ -49,73 +45,26 @@ export async function POST(req: NextRequest) {
       aspectRatio: body.aspectRatio,
       referenceUrl: body.referenceUrl,
       referenceFileName: body.referenceFileName,
-      images: scenes.map<ShootImage>((prompt, index) => ({
-        index,
-        prompt,
-        generationId: null,
-        state: "queued",
-        url: null,
-        cdnUrl: null,
-        variants: [],
-      })),
+      prompts: scenes,
     };
 
-    await createShoot(manifest);
-
-    void runGenerations(manifest, referenceAbsoluteUrl);
+    await writeBase(base);
+    await Promise.all(
+      scenes.map((_, i) =>
+        writeImageState(id, {
+          index: i,
+          generationId: null,
+          state: "queued",
+          url: null,
+          cdnUrl: null,
+          variants: [],
+        })
+      )
+    );
 
     return NextResponse.json({ id, count: scenes.length });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed to create shoot";
     return NextResponse.json({ error: msg }, { status: 500 });
-  }
-}
-
-async function runGenerations(
-  manifest: ShootManifest,
-  referenceAbsoluteUrl: string
-) {
-  const concurrency = 6;
-  const queue = [...manifest.images];
-  const inFlight = new Set<Promise<void>>();
-
-  async function processOne(image: ShootImage) {
-    try {
-      const gen = await startSceneGeneration({
-        prompt: image.prompt,
-        aspectRatio: manifest.aspectRatio,
-        referenceUrl: referenceAbsoluteUrl,
-      });
-      image.generationId = gen.id;
-      image.state = "dreaming";
-      await writeManifest(manifest);
-
-      const final = await pollGeneration(gen.id);
-      if (final.state === "completed" && final.assets?.image) {
-        const buf = await downloadImage(final.assets.image);
-        const localUrl = await saveImage(manifest.id, image.index, null, buf);
-        image.url = localUrl;
-        image.cdnUrl = final.assets.image;
-        image.state = "completed";
-      } else {
-        image.state = "failed";
-        image.failureReason = final.failure_reason ?? "Generation failed";
-      }
-    } catch (err) {
-      image.state = "failed";
-      image.failureReason = err instanceof Error ? err.message : String(err);
-    }
-    await writeManifest(manifest);
-  }
-
-  while (queue.length > 0 || inFlight.size > 0) {
-    while (queue.length > 0 && inFlight.size < concurrency) {
-      const next = queue.shift()!;
-      const p = processOne(next).finally(() => {
-        inFlight.delete(p);
-      });
-      inFlight.add(p);
-    }
-    if (inFlight.size > 0) await Promise.race(inFlight);
   }
 }
