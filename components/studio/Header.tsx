@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Aperture } from "lucide-react";
+import { Aperture, History } from "lucide-react";
 
 export function Header({ onReset }: { onReset?: () => void }) {
   return (
@@ -23,7 +23,15 @@ export function Header({ onReset }: { onReset?: () => void }) {
           Luma Studio
         </span>
       </Link>
-      <span className="cap hidden md:block">Photoshoot · Uni-1</span>
+      <div className="flex items-center gap-2">
+        <Link
+          href="/history"
+          className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line-strong)] bg-ink-800/60 px-3 py-1.5 text-[11px] text-paper-mute transition hover:text-paper hover:border-paper/30"
+        >
+          <History className="h-3 w-3" /> History
+        </Link>
+        <span className="cap hidden md:block">Photoshoot · Uni-1</span>
+      </div>
     </header>
   );
 }

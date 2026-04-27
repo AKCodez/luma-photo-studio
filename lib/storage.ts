@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { put, head } from "@vercel/blob";
+import { put, head, list } from "@vercel/blob";
 import type {
   AspectRatio,
   GenerationState,
@@ -252,4 +252,115 @@ export async function saveImage(
 
 export function newShootId(): string {
   return randomUUID();
+}
+
+export interface HistoryEntry {
+  id: string;
+  createdAt: string;
+  mode: ShootMode;
+  packId: string | null;
+  surpriseTheme: string | null;
+  aspectRatio: AspectRatio;
+  thumbUrl: string | null;
+  referenceUrls: string[];
+  completedCount: number;
+  totalCount: number;
+}
+
+export async function listShoots(limit = 60): Promise<HistoryEntry[]> {
+  if (!useBlob) {
+    let ids: string[] = [];
+    try {
+      ids = await fs.readdir(SHOOTS_DIR);
+    } catch {
+      return [];
+    }
+    const entries = await Promise.all(
+      ids.map(async (id) => {
+        const base = await readBase(id);
+        if (!base) return null;
+        const states = await Promise.all(
+          base.prompts.map((_, i) => readImageState(id, i))
+        );
+        const completed = states.filter((s) => s?.state === "completed");
+        const firstImg = completed[0]?.url ?? base.referenceUrls[0] ?? null;
+        return entryOf(base, firstImg, completed.length);
+      })
+    );
+    return entries
+      .filter((e): e is HistoryEntry => e !== null)
+      .sort(byNewest)
+      .slice(0, limit);
+  }
+
+  const seen = new Map<string, { baseUrl?: string; jpgUrls: Map<number, string> }>();
+  let cursor: string | undefined = undefined;
+  do {
+    const page: Awaited<ReturnType<typeof list>> = await list({
+      prefix: "shoots/",
+      cursor,
+      limit: 1000,
+    });
+    for (const blob of page.blobs) {
+      const m = blob.pathname.match(/^shoots\/([^/]+)\/(.+)$/);
+      if (!m) continue;
+      const [, id, rest] = m;
+      let entry = seen.get(id);
+      if (!entry) {
+        entry = { jpgUrls: new Map() };
+        seen.set(id, entry);
+      }
+      if (rest === "base.json") {
+        entry.baseUrl = blob.url;
+      } else {
+        const jm = rest.match(/^(\d+)\.jpg$/);
+        if (jm) entry.jpgUrls.set(Number(jm[1]), blob.url);
+      }
+    }
+    cursor = page.hasMore ? page.cursor : undefined;
+  } while (cursor);
+
+  const entries = await Promise.all(
+    [...seen.entries()].map(async ([id, e]) => {
+      if (!e.baseUrl) return null;
+      try {
+        const res = await fetch(e.baseUrl, { cache: "no-store" });
+        if (!res.ok) return null;
+        const base = (await res.json()) as ShootBase;
+        const sorted = [...e.jpgUrls.entries()].sort(([a], [b]) => a - b);
+        const firstJpg = sorted[0]?.[1] ?? base.referenceUrls[0] ?? null;
+        return entryOf(base, firstJpg, sorted.length);
+      } catch {
+        return null;
+      }
+    })
+  );
+
+  return entries
+    .filter((e): e is HistoryEntry => e !== null)
+    .sort(byNewest)
+    .slice(0, limit);
+}
+
+function entryOf(
+  base: ShootBase,
+  thumbUrl: string | null,
+  completedCount: number
+): HistoryEntry {
+  return {
+    id: base.id,
+    createdAt: base.createdAt,
+    mode: base.mode,
+    packId: base.packId ?? null,
+    surpriseTheme: base.surpriseTheme ?? null,
+    aspectRatio: base.aspectRatio,
+    thumbUrl,
+    referenceUrls: base.referenceUrls,
+    completedCount,
+    totalCount: base.prompts.length,
+  };
+}
+
+function byNewest(a: HistoryEntry, b: HistoryEntry) {
+  return a.createdAt < b.createdAt ? 1 : -1;
 }
