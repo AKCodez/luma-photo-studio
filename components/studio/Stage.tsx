@@ -160,43 +160,47 @@ export function Stage({ initialManifest }: Props) {
     }
   }
 
+  const shootId = manifest?.id ?? null;
   useEffect(() => {
-    if (step !== "generating" || !manifest) return;
+    if (!shootId) return;
     let cancelled = false;
+    let stopped = false;
+
     async function tick() {
-      while (!cancelled) {
-        await new Promise((r) => setTimeout(r, 2200));
-        if (cancelled) break;
+      while (!cancelled && !stopped) {
         try {
-          const res = await fetch(`/api/shoots/${manifest!.id}`, {
-            cache: "no-store",
-          });
-          if (!res.ok) continue;
-          const next = (await res.json()) as ShootManifest;
-          setManifest(next);
-          const settled = next.images.every(
-            (i) => i.state === "completed" || i.state === "failed"
-          );
-          if (settled) {
-            setStep("gallery");
-            const failed = next.images.filter((i) => i.state === "failed");
-            if (failed.length === next.images.length) {
-              toast.error("All scenes failed. Check failure reasons on each card.");
-            } else if (failed.length > 0) {
-              toast.warning(`${failed.length} of ${next.images.length} scenes failed.`);
+          const res = await fetch(`/api/shoots/${shootId}`, { cache: "no-store" });
+          if (res.ok) {
+            const next = (await res.json()) as ShootManifest;
+            setManifest(next);
+            const settled = next.images.every(
+              (i) => i.state === "completed" || i.state === "failed"
+            );
+            if (settled) {
+              setStep((s) => (s === "generating" ? "gallery" : s));
+              const failed = next.images.filter((i) => i.state === "failed");
+              if (failed.length === next.images.length) {
+                toast.error("All scenes failed. Check failure reasons on each card.");
+              } else if (failed.length > 0) {
+                toast.warning(
+                  `${failed.length} of ${next.images.length} scenes failed.`
+                );
+              }
+              stopped = true;
+              break;
             }
-            break;
           }
         } catch {
           // ignore polling errors
         }
+        await new Promise((r) => setTimeout(r, 2000));
       }
     }
     void tick();
     return () => {
       cancelled = true;
     };
-  }, [step, manifest]);
+  }, [shootId]);
 
   const stepIndex = useMemo(() => {
     return {
