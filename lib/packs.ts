@@ -2,6 +2,52 @@ import type { Pack } from "./types";
 
 export const PACKS: Pack[] = [
   {
+    id: "gta",
+    name: "GTA",
+    tagline: "Welcome to Vice City",
+    description:
+      "Loading-screen art. Cel-shaded comic-book covers, dramatic studio lighting, Vice City sun, Los Santos chrome. Full-body, larger-than-life.",
+    accentColor: "#ff5fb4",
+    scenes: [
+      "Full-body shot of subject standing on a Miami beachfront at sunset, palm trees lining the boulevard, gold chain over an open Hawaiian shirt, smoking a cigarette, in the style of Grand Theft Auto loading screens, cel-shaded digital painting, highly detailed, dramatic composition, 21st century comic book cover, studio lighting, neon strip and Vice City skyline in background.",
+      "Full-body shot of subject leaning on the hood of a chrome-trimmed muscle car in a neon-lit Vice City parking lot at night, palm-tree sign glowing pink behind, in the style of GTA loading screens, cel-shaded comic book artwork, highly detailed digital painting, dramatic noir composition, studio lighting.",
+      "Full-body shot of subject mid-stride on a Liberty City sidewalk at noon, leather jacket, hands in pockets, yellow cabs streaking past, in the style of Grand Theft Auto loading screens, cel-shaded illustration, highly detailed comic book cover, dramatic backlit composition, studio lighting.",
+      "Full-body shot of subject perched on the hood of a low-rider on a Los Santos river bridge at dusk, oversized aviators and a gold pinky ring, downtown Los Santos skyline behind, GTA loading screen artwork, cel-shaded digital painting, dramatic angled composition, 21st century comic book cover, studio lighting.",
+      "Full-body shot of subject on a Vinewood Hills rooftop at golden hour, infinity pool reflecting palm trees, holding a champagne flute, in the style of GTA loading screens, cel-shaded illustration, highly detailed, dramatic composition, comic book cover, studio lighting.",
+      "Full-body shot of subject on the deck of a white speedboat off Vice Beach, ocean spray, gold chains, sunglasses, palm-tree coastline blurred behind, in the style of Grand Theft Auto Vice City loading screens, cel-shaded digital painting, dramatic backlit composition, comic book cover, studio lighting.",
+      "Full-body shot of subject leaning against a graffitied barrio wall at midday, lowrider parked behind, sunglasses, slight smirk, in the style of GTA San Andreas loading screens, cel-shaded illustration, highly detailed, harsh sun shadows, dramatic composition, comic book cover, studio lighting.",
+      "Full-body shot of subject standing on a desert highway beside a chrome cruiser motorcycle, leather jacket, denim, sunset sky burning orange, in the style of GTA loading screens, cel-shaded digital painting, dramatic widescreen composition, 21st century comic book cover, studio lighting, Mojave-style horizon in background.",
+      "Full-body shot of subject mid-action diving toward a Vinewood swimming pool, frozen at the apex, palm trees and Hollywood-style hills behind, in the style of Grand Theft Auto loading screens, cel-shaded illustration, highly detailed, dramatic action composition, 21st century comic book cover, studio lighting.",
+      "Full-body shot of subject in a velour tracksuit outside a strip-mall liquor store at dusk, neon signs flickering on, paper bag in hand, in the style of GTA San Andreas loading screens, cel-shaded comic book artwork, dramatic ambient composition, studio lighting.",
+      "Full-body shot of subject walking down a Vice City pier at golden hour in a crisp white linen suit, no tie, palm trees and pastel buildings behind, in the style of Grand Theft Auto Vice City loading screens, cel-shaded digital painting, dramatic golden-hour backlight, comic book cover, studio lighting.",
+      "Full-body shot of subject on a Los Santos club balcony at midnight, glittering downtown skyline behind, holding a martini, neon magenta and cyan rim light, in the style of GTA V loading screens, cel-shaded illustration, highly detailed, dramatic composition, 21st century comic book cover, studio lighting.",
+    ],
+    defaultAspectRatio: "4:3",
+  },
+  {
+    id: "simpsons",
+    name: "Simpsons",
+    tagline: "Springfield resident",
+    description:
+      "Yellow skin, four fingers, big round eyes. Classic 2D animation-cel look, flat saturated colours, full Springfield iconography from Moe's to the Kwik-E-Mart.",
+    accentColor: "#ffd521",
+    scenes: [
+      "Subject re-imagined as a Simpsons cartoon character with yellow skin, four fingers, big round eyes and overbite, sitting on the iconic orange couch in front of the Simpsons family TV, hand-drawn animation cel, flat saturated colours, classic Matt Groening style, full body, Springfield living room with brown wood-panel walls.",
+      "Subject as a Simpsons cartoon character at Moe's Tavern bar holding a frosted mug of Duff beer, yellow skin, four fingers, big round eyes, dim green-walled tavern interior with neon Duff sign, flat saturated colours, hand-drawn animation cel, classic Matt Groening style, full body.",
+      "Subject re-drawn as a Simpsons cartoon outside the Springfield Nuclear Power Plant cooling towers, wearing a white safety hard hat, yellow skin, four fingers, big round eyes, flat saturated colour palette, midday cartoon-blue sky, hand-drawn animation cel, classic Matt Groening style, full body.",
+      "Subject as a Simpsons cartoon holding a pink-frosted-and-sprinkled donut next to the Lard Lad Donuts statue at noon, yellow skin, four fingers, big round eyes, flat saturated colours, classic Matt Groening cartoon style, hand-drawn animation cel, Springfield commercial street, full body.",
+      "Subject as a Simpsons cartoon character at the counter of the Kwik-E-Mart holding a giant blue Squishee, fluorescent overhead lighting, yellow skin, four fingers, big round eyes, flat saturated colour palette, classic 2D animation, hand-drawn cel, full body.",
+      "Subject as a Simpsons cartoon sitting in a yellow Springfield Elementary school bus seat looking out the window, yellow skin, four fingers, big round eyes, flat saturated colours, classic Matt Groening cartoon style, hand-drawn animation cel, full body.",
+      "Subject as a Simpsons cartoon character cheering in the bleachers at Duff Stadium with a giant foam finger and a Duff hot dog, yellow skin, four fingers, big round eyes, flat saturated colours, sunny cartoon stadium, classic Matt Groening cartoon style, hand-drawn animation cel, full body.",
+      "Subject as a Simpsons cartoon at Krusty Burger holding a Krusty Meal box, neon Krusty the Clown sign behind, yellow skin, four fingers, big round eyes, flat saturated colour palette, classic 2D animation, hand-drawn cel, full body.",
+      "Subject re-drawn in Simpsons cartoon style, riding a skateboard past the 742 Evergreen Terrace mailbox of the pink Simpsons house, yellow skin, four fingers, big round eyes, flat saturated colour palette, classic Matt Groening style, hand-drawn animation cel, full body, sunny suburban afternoon.",
+      "Subject as a Simpsons cartoon character in pyjamas on the front lawn of the pink Simpsons house at sunset, sprinkler arcing water, yellow skin, four fingers, big round eyes, flat saturated colours, classic 2D cartoon, hand-drawn animation cel, full body.",
+      "Subject as a Simpsons cartoon character at the Aztec Theater holding a tub of popcorn, glow of an Itchy and Scratchy reel on the face, yellow skin, four fingers, big round eyes, flat saturated colours, classic Matt Groening cartoon style, hand-drawn animation cel, full body.",
+      "Subject re-imagined as a Simpsons cartoon character at Springfield Harbour pier with a fishing rod and a three-eyed fish on the line, yellow skin, four fingers, big round eyes, flat saturated colours, classic Matt Groening cartoon style, hand-drawn animation cel, full body, late-afternoon cartoon sky.",
+    ],
+    defaultAspectRatio: "4:3",
+  },
+  {
     id: "cinematic",
     name: "Cinematic",
     tagline: "A film you haven't seen yet",
