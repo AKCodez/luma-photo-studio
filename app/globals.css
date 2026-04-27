@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a0a;
+  --bg-elev: #121110;
+  --bg-elev-2: #1a1815;
+  --paper: #f5f1e8;
+  --paper-dim: #d8d2c4;
+  --paper-mute: #a59f8e;
+  --line: rgba(245, 241, 232, 0.08);
+  --line-strong: rgba(245, 241, 232, 0.16);
+  --ember: #d97757;
+  --ember-light: #e89478;
+  --ember-dim: #b85a3e;
+  --soft-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--paper);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: "ss01", "ss02", "cv11";
+}
+
+body {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(217, 119, 87, 0.10), transparent 55%),
+    radial-gradient(circle at 0% 110%, rgba(217, 119, 87, 0.04), transparent 60%);
+}
+
+::selection {
+  background: var(--ember);
+  color: var(--bg);
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+  font-family: inherit;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.cap {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--paper-mute);
+  font-weight: 500;
+}
+
+.shimmer {
+  background: linear-gradient(
+    110deg,
+    var(--bg-elev) 8%,
+    var(--bg-elev-2) 18%,
+    var(--bg-elev) 33%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+.scrollbar-pretty::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scrollbar-pretty::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-pretty::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+.scrollbar-pretty::-webkit-scrollbar-thumb:hover {
+  background: var(--paper-mute);
+}
+
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
