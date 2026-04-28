@@ -10,10 +10,14 @@ export const revalidate = 0;
 
 const ASPECT_CLASS: Record<AspectRatio, string> = {
   "9:16": "aspect-[9/16]",
-  "3:4": "aspect-[3/4]",
+  "2:3": "aspect-[2/3]",
   "1:1": "aspect-square",
-  "4:3": "aspect-[4/3]",
+  "3:2": "aspect-[3/2]",
   "16:9": "aspect-[16/9]",
+  "1:2": "aspect-[1/2]",
+  "1:3": "aspect-[1/3]",
+  "2:1": "aspect-[2/1]",
+  "3:1": "aspect-[3/1]",
 };
 
 function formatRelative(iso: string): string {

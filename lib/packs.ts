@@ -23,7 +23,7 @@ export const PACKS: Pack[] = [
       "GTA 6 promotional cover art, hyper-detailed painterly digital illustration in the style of Rockstar Games loading screens, sunset trailer-park Florida palette, golden cinematic rim light, atmospheric haze, trending on ArtStation, 8K. Subject leaning on a beat-up muscle car in a Leonida trailer-park lot, sunset behind, sleeveless shirt and tattoos, dramatic hero composition, full body shot.",
       "GTA 6 promotional cover art, hyper-detailed painterly digital illustration in the style of Rockstar Games loading screens, vibrant Vice City golf-course palette, cinematic golden-hour light, trending on ArtStation, 8K. Subject on a luxury Vice City rooftop pool deck overlooking neon-lit downtown at dusk, holding a champagne flute, palm trees, dramatic hero composition, full body shot.",
     ],
-    defaultAspectRatio: "4:3",
+    defaultAspectRatio: "3:2",
   },
   {
     id: "yellow-town",
@@ -47,7 +47,7 @@ export const PACKS: Pack[] = [
       "Classic 1990s American yellow-skinned animated sitcom cartoon, hand-drawn 2D animation cel, four-fingered cartoon characters, big round white eyes, bold black outlines, flat saturated colours. Subject standing in a cluttered yellow-skinned cartoon comic-book store, a morbidly obese ponytailed cartoon shopkeeper with a goatee in a tight graphic tee behind the counter, walls of comics and figurines, full body cartoon scene.",
       "Classic 1990s American yellow-skinned animated sitcom cartoon, hand-drawn 2D animation cel, four-fingered cartoon characters, big round white eyes, bold black outlines, flat saturated colours. Subject standing on the front lawn of a pink two-story suburban cartoon family house at sunset, a kindly mustached cartoon neighbour in a green sweater and round glasses leaning over the picket fence with a wave and a grin, sprinkler arcing water on the green lawn, full body cartoon scene.",
     ],
-    defaultAspectRatio: "4:3",
+    defaultAspectRatio: "3:2",
   },
   {
     id: "cinematic",
@@ -93,7 +93,7 @@ export const PACKS: Pack[] = [
       "Subject in jeans and tee at a hackathon, energy-drink cans, sticker-covered laptop, fluorescent overhead, candid 28mm reportage with mild flash.",
       "Subject standing in front of a Y-Combinator-style orange wall holding a sharpie and laughing, square 6x6 format, ringlight key, on-axis editorial.",
     ],
-    defaultAspectRatio: "4:3",
+    defaultAspectRatio: "3:2",
   },
   {
     id: "editorial",
@@ -116,7 +116,7 @@ export const PACKS: Pack[] = [
       "Subject in a translucent latex outfit standing in front of a mirrored wall, soft pink gel uplight, distorted reflections, 50mm conceptual fashion.",
       "Subject up to the waist in a wheat field at dusk, oversized vintage trench coat, single rim of golden hour, painterly composition, Pentax 67 medium-format.",
     ],
-    defaultAspectRatio: "3:4",
+    defaultAspectRatio: "2:3",
   },
   {
     id: "streetwear",
@@ -139,7 +139,7 @@ export const PACKS: Pack[] = [
       "Subject sitting on the curb beside a graffiti-covered freight container, eating dollar pizza, harsh midday flat sun, 28mm photo-essay framing.",
       "Subject standing in front of a stack of crushed Coke crates in a Mexico City alley, oversized jersey, single overhead bulb, gritty 35mm flash on-camera.",
     ],
-    defaultAspectRatio: "4:3",
+    defaultAspectRatio: "3:2",
   },
   {
     id: "travel",
@@ -185,7 +185,7 @@ export const PACKS: Pack[] = [
       "Subject in a candlelit secret-society chamber, brass astrolabe in hand, hood half drawn, single warm taper as key light, 50mm large-format moody.",
       "Subject pacing a chalkboard-covered seminar room, equations behind in white chalk, sleeves rolled, 35mm ambient overhead fluorescents.",
     ],
-    defaultAspectRatio: "3:4",
+    defaultAspectRatio: "2:3",
   },
   {
     id: "y2k",
@@ -231,7 +231,7 @@ export const PACKS: Pack[] = [
       "Subject on a convention-floor stage holding a microphone, spotlight cone in haze, audience phones glittering, 85mm long lens.",
       "Subject leaning over a glass display case of vintage Famicom cartridges, single LED case-light up-lighting face, macro 100mm shallow focus.",
     ],
-    defaultAspectRatio: "3:4",
+    defaultAspectRatio: "2:3",
   },
   {
     id: "album-cover",
@@ -277,7 +277,7 @@ export const PACKS: Pack[] = [
       "Subject framed by a halo of neon tube ring, all face beautifully lit, deep black behind, 85mm contemporary cover style.",
       "Subject in head-to-toe black against black, only face emerging into light, single small key light, 100mm Avedon-homage cover.",
     ],
-    defaultAspectRatio: "3:4",
+    defaultAspectRatio: "2:3",
   },
   {
     id: "dating-profile",
@@ -300,7 +300,7 @@ export const PACKS: Pack[] = [
       "Subject crouched at the end of a wooden pier feeding a piece of bread to a duck, golden hour, denim jacket, 35mm candid lifestyle.",
       "Subject leaning on a kitchen island at a friend's house party, holding a beer, half-listening to a story off-frame, ambient warm interior, 35mm reportage.",
     ],
-    defaultAspectRatio: "4:3",
+    defaultAspectRatio: "3:2",
   },
 ];
 

@@ -10,23 +10,31 @@ interface Props {
 
 const HINTS: Record<AspectRatio, string> = {
   "9:16": "Phone",
-  "3:4": "Editorial",
+  "2:3": "Editorial",
   "1:1": "Square",
-  "4:3": "Classic",
+  "3:2": "Classic",
   "16:9": "Cinema",
+  "1:2": "Tall",
+  "1:3": "Ultra tall",
+  "2:1": "Wide",
+  "3:1": "Ultra wide",
 };
 
 const SHAPES: Record<AspectRatio, string> = {
   "9:16": "h-5 w-[11px]",
-  "3:4": "h-5 w-[15px]",
+  "2:3": "h-5 w-[15px]",
   "1:1": "h-4 w-4",
-  "4:3": "h-3.5 w-[19px]",
+  "3:2": "h-3.5 w-[20px]",
   "16:9": "h-3 w-[22px]",
+  "1:2": "h-5 w-2",
+  "1:3": "h-6 w-2",
+  "2:1": "h-2.5 w-[20px]",
+  "3:1": "h-2 w-[22px]",
 };
 
 export function AspectControl({ value, onChange }: Props) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-[var(--line-strong)] bg-ink-800/60 p-1">
+    <div className="inline-flex items-center gap-1 rounded-full border border-[var(--line-strong)] bg-ink-800/60 p-1 flex-wrap">
       {ASPECT_RATIOS.map((ratio) => {
         const active = ratio === value;
         return (

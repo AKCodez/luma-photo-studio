@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     index: variantIndex,
     prompt: editPrompt,
     generationId: null,
-    state: "dreaming",
+    state: "queued",
     url: null,
     cdnUrl: null,
     parentVariant: body.variantParent ?? null,
@@ -79,19 +79,19 @@ export async function POST(req: NextRequest) {
       prompt: editPrompt,
       aspectRatio: base.aspectRatio,
       referenceUrls: base.referenceUrls,
-      modifyImageUrl: sourceUrl,
-      modifyWeight: 0.05,
-      enrich: false,
+      sourceUrl,
     });
     variant.generationId = gen.id;
+    variant.state = "processing";
 
     const fresh = (await readImageState(body.shootId, body.imageIndex)) ?? image;
     fresh.variants = [...(fresh.variants ?? []), variant];
     await writeImageState(body.shootId, fresh);
 
     const final = await pollGeneration(gen.id);
-    if (final.state === "completed" && final.assets?.image) {
-      const buf = await downloadImage(final.assets.image);
+    const firstAsset = final.output?.[0]?.url;
+    if (final.state === "completed" && firstAsset) {
+      const buf = await downloadImage(firstAsset);
       const localUrl = await saveImage(
         body.shootId,
         body.imageIndex,
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
         buf
       );
       variant.url = localUrl;
-      variant.cdnUrl = final.assets.image;
+      variant.cdnUrl = firstAsset;
       variant.state = "completed";
     } else {
       variant.state = "failed";

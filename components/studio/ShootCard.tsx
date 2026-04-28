@@ -15,10 +15,14 @@ interface Props {
 
 const ASPECT_CLASS: Record<AspectRatio, string> = {
   "9:16": "aspect-[9/16]",
-  "3:4": "aspect-[3/4]",
+  "2:3": "aspect-[2/3]",
   "1:1": "aspect-square",
-  "4:3": "aspect-[4/3]",
+  "3:2": "aspect-[3/2]",
   "16:9": "aspect-[16/9]",
+  "1:2": "aspect-[1/2]",
+  "1:3": "aspect-[1/3]",
+  "2:1": "aspect-[2/1]",
+  "3:1": "aspect-[3/1]",
 };
 
 export function ShootCard({ image, aspectRatio, index, onClick }: Props) {
@@ -79,20 +83,22 @@ export function ShootCard({ image, aspectRatio, index, onClick }: Props) {
       )}
 
       {isReady && (
-        <motion.div
-          animate={{ opacity: hover ? 1 : 0 }}
-          transition={{ duration: 0.25 }}
-          className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-gradient-to-t from-ink-900/90 via-ink-900/50 to-transparent p-3 pt-10"
-        >
-          <p className="line-clamp-2 text-left text-[11px] text-paper-dim leading-relaxed">
-            {image.prompt}
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-paper/90 px-3 py-1.5 text-[11px] font-medium text-ink-900">
-              <Pencil className="h-3 w-3" /> Edit
-            </span>
-          </div>
-        </motion.div>
+        <>
+          <span
+            className="pointer-events-none absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-paper/90 px-2.5 py-1 text-[10px] font-medium text-ink-900 shadow-sm md:opacity-0 md:transition md:group-hover:opacity-100"
+          >
+            <Pencil className="h-2.5 w-2.5" /> Edit
+          </span>
+          <motion.div
+            animate={{ opacity: hover ? 1 : 0 }}
+            transition={{ duration: 0.25 }}
+            className="pointer-events-none absolute inset-x-0 bottom-0 hidden md:flex flex-col gap-2 bg-gradient-to-t from-ink-900/90 via-ink-900/50 to-transparent p-3 pt-10"
+          >
+            <p className="line-clamp-2 text-left text-[11px] text-paper-dim leading-relaxed">
+              {image.prompt}
+            </p>
+          </motion.div>
+        </>
       )}
 
       {!isReady && !isFailed && (
@@ -102,7 +108,7 @@ export function ShootCard({ image, aspectRatio, index, onClick }: Props) {
           </p>
           <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] text-paper-mute font-mono">
             <RefreshCw className="h-2.5 w-2.5 animate-spin" />
-            dreaming
+            generating
           </p>
         </div>
       )}

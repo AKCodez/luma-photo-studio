@@ -1,32 +1,12 @@
-import type {
-  AspectRatio,
-  LumaCharacterRef,
-  LumaModifyImageRef,
-  PackStyle,
-} from "./types";
+import type { AspectRatio, PackStyle } from "./types";
 import { createImageGeneration } from "./luma";
 
 export interface BuildPayloadOpts {
   prompt: string;
   aspectRatio: AspectRatio;
   referenceUrls?: string[];
-  modifyImageUrl?: string;
-  characterWeight?: number;
-  modifyWeight?: number;
-  enrich?: boolean;
+  sourceUrl?: string;
   style?: PackStyle;
-}
-
-export function buildCharacterRef(
-  urls: string[],
-  weight = 0.95
-): LumaCharacterRef {
-  const images = urls.filter(Boolean).slice(0, 4);
-  return { identity0: { images, weight } };
-}
-
-export function buildModifyRef(url: string, weight = 0.05): LumaModifyImageRef {
-  return { url, weight };
 }
 
 export async function startSceneGeneration(opts: BuildPayloadOpts) {
@@ -34,11 +14,8 @@ export async function startSceneGeneration(opts: BuildPayloadOpts) {
   return createImageGeneration({
     prompt: opts.prompt,
     aspectRatio: opts.aspectRatio,
-    characterRef:
-      refs.length > 0 ? buildCharacterRef(refs, opts.characterWeight) : undefined,
-    modifyImageRef: opts.modifyImageUrl
-      ? buildModifyRef(opts.modifyImageUrl, opts.modifyWeight)
-      : undefined,
+    imageRefs: refs.length > 0 ? refs : undefined,
+    source: opts.sourceUrl,
   });
 }
 

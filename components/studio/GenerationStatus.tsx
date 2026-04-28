@@ -7,6 +7,8 @@ interface Props {
   images: ShootImage[];
 }
 
+
+
 export function GenerationStatus({ images }: Props) {
   const total = images.length;
   const done = images.filter((i) => i.state === "completed").length;

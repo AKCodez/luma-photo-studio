@@ -47,23 +47,24 @@ export async function POST(
     await writeImageState(id, {
       index,
       generationId: gen.id,
-      state: "dreaming",
+      state: "processing",
       url: null,
       cdnUrl: null,
       variants: [],
     });
 
     const final = await pollGeneration(gen.id);
+    const firstAsset = final.output?.[0]?.url;
 
-    if (final.state === "completed" && final.assets?.image) {
-      const buf = await downloadImage(final.assets.image);
+    if (final.state === "completed" && firstAsset) {
+      const buf = await downloadImage(firstAsset);
       const localUrl = await saveImage(id, index, null, buf);
       const completed = {
         index,
         generationId: gen.id,
         state: "completed" as const,
         url: localUrl,
-        cdnUrl: final.assets.image,
+        cdnUrl: firstAsset,
         variants: [],
       };
       await writeImageState(id, completed);

@@ -1,10 +1,25 @@
-export type AspectRatio = "9:16" | "3:4" | "1:1" | "4:3" | "16:9";
+export type AspectRatio =
+  | "3:1"
+  | "2:1"
+  | "16:9"
+  | "3:2"
+  | "1:1"
+  | "2:3"
+  | "9:16"
+  | "1:2"
+  | "1:3";
 
-export const ASPECT_RATIOS: AspectRatio[] = ["9:16", "3:4", "1:1", "4:3", "16:9"];
+export const ASPECT_RATIOS: AspectRatio[] = [
+  "9:16",
+  "2:3",
+  "1:1",
+  "3:2",
+  "16:9",
+];
 
 export type ShootMode = "pack" | "surprise" | "custom";
 
-export type GenerationState = "queued" | "dreaming" | "completed" | "failed";
+export type GenerationState = "queued" | "processing" | "completed" | "failed";
 
 export interface Scene {
   index: number;
@@ -58,40 +73,38 @@ export interface Pack {
   style?: PackStyle;
 }
 
-export interface LumaCharacterRef {
-  identity0: { images: string[]; weight?: number };
-}
-
 export interface LumaImageRef {
-  url: string;
-  weight?: number;
+  url?: string;
+  data?: string;
+  media_type?: string;
 }
 
-export interface LumaModifyImageRef {
-  url: string;
-  weight?: number;
-}
+export type LumaGenerationType = "image" | "image_edit";
 
-export interface LumaCreateImageRequest {
+export interface LumaCreateRequest {
   prompt: string;
-  aspect_ratio?: AspectRatio;
+  type?: LumaGenerationType;
   model?: string;
-  generation_type?: "image";
-  format?: "jpg" | "png";
-  callback_url?: string;
+  aspect_ratio?: AspectRatio | null;
+  style?: "auto" | "manga";
+  output_format?: "png" | "jpeg" | null;
+  web_search?: boolean;
   image_ref?: LumaImageRef[];
-  style_ref?: LumaImageRef[];
-  character_ref?: LumaCharacterRef;
-  modify_image_ref?: LumaModifyImageRef;
+  source?: LumaImageRef;
+}
+
+export interface LumaOutputAsset {
+  type: "image";
+  url: string;
 }
 
 export interface LumaGeneration {
   id: string;
-  type: "image";
-  state: "queued" | "dreaming" | "completed" | "failed";
-  failure_reason: string | null;
-  created_at: string;
-  assets: { image: string | null; video: string | null } | null;
+  type: LumaGenerationType;
+  state: GenerationState;
   model: string;
-  request: unknown;
+  created_at: string;
+  output: LumaOutputAsset[];
+  failure_reason: string | null;
+  failure_code: string | null;
 }

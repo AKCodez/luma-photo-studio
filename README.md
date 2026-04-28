@@ -6,7 +6,7 @@ Drop one face. Walk out with a 12-image photoshoot.
 
 A single-page studio that takes up to three reference photos of your face and produces a curated 12-image shoot. Three modes: pre-built **Packs** (GTA 6, Editorial, Dating Profile, Cinematic, Tech Founder, Streetwear, Travel, Dark Academia, Y2K, Album Cover, Magazine Cover, Anime Con, Simpsons-inspired), **Surprise Me** (Claude invents 12 distinct scenes from a one-word vibe), and **Custom** (write your own). Click any image to edit it in plain English.
 
-Built with [Luma Uni-1 / Photon](https://lumalabs.ai/uni-1) for image generation, Claude Sonnet for scene authoring, Next.js, and Vercel.
+Built on the [Luma Agents API](https://lumalabs.ai/uni-1) (`uni-1` model) for image generation + editing, Claude Sonnet for scene authoring, Next.js, and Vercel.
 
 ---
 
@@ -25,7 +25,7 @@ Built with [Luma Uni-1 / Photon](https://lumalabs.ai/uni-1) for image generation
 - **Next.js 15.5** App Router + React 19 + TypeScript strict
 - **Tailwind CSS** + shadcn primitives + Framer Motion
 - **@anthropic-ai/sdk** — Claude Sonnet 4.5 for surprise scene authoring (tool calling)
-- **Luma Dream Machine API** — `photon-1` model with `character_ref` face lock and `modify_image_ref` for edits
+- **Luma Agents API** (`https://agents.lumalabs.ai/v1`) — `uni-1` model with `image_ref` for face lock and `type: "image_edit"` + `source` for edits
 - **Vercel Blob** — direct browser-to-blob uploads (bypasses 4.5 MB serverless body cap), per-image state stored as separate JSON blobs to avoid concurrent-write races
 - **React Query + Sonner** for client polling and toasts
 
@@ -60,11 +60,11 @@ Create `.env.local` from `.env.example` and fill in:
 
 | Variable | What it's for | Where to get it |
 |---|---|---|
-| `LUMA_API_KEY` | Image generation + editing | https://lumalabs.ai/dream-machine/api/keys |
+| `LUMA_AGENTS_API_KEY` | Image generation + editing (uni-1) | https://lumalabs.ai — Luma Agents dashboard. The code also accepts `LUMA_API_KEY` for backwards compatibility. |
 | `ANTHROPIC_API_KEY` | Surprise Me scene authoring | https://console.anthropic.com/ |
 | `BLOB_READ_WRITE_TOKEN` | Image + manifest storage | Vercel Dashboard → Storage → Create Blob Store → Connect to project. Or use `vercel env pull .env.local` after linking. |
 
-**Local dev without Vercel Blob:** if `BLOB_READ_WRITE_TOKEN` is missing, the app falls back to local filesystem storage at `./data/` and `./public/uploads`, `./public/shoots/`. Generated images are served by Next.js. Uploads still need to be reachable by Luma's servers though, so for testing `character_ref` on localhost you'll want a tunnel (e.g. `ngrok http 3000`) or just deploy to Vercel.
+**Local dev without Vercel Blob:** if `BLOB_READ_WRITE_TOKEN` is missing, the app falls back to local filesystem storage at `./data/` and `./public/uploads`, `./public/shoots/`. Generated images are served by Next.js. Uploads still need to be reachable by Luma's servers though, so for testing `image_ref` on localhost you'll want a tunnel (e.g. `ngrok http 3000`) or just deploy to Vercel.
 
 > **Security:** `.env`, `.env.local`, and `.env*.local` are gitignored. **Never commit real keys.** When you fork, double-check before your first push.
 
@@ -86,7 +86,7 @@ vercel blob create-store luma-store
 # answer 'y' when asked to connect to project
 
 # 4. Push your two API keys as encrypted env vars
-vercel env add LUMA_API_KEY production
+vercel env add LUMA_AGENTS_API_KEY production
 vercel env add ANTHROPIC_API_KEY production
 # (repeat for preview / development if you want)
 
@@ -113,7 +113,7 @@ app/
     shoots/[id]/route.ts              GET: aggregated manifest
     shoots/[id]/generate/[index]/route.ts
                                       POST: run ONE Luma generation (synchronous)
-    edit/route.ts                     POST: modify_image_ref edit
+    edit/route.ts                     POST: type:image_edit + source
     surprise/route.ts                 POST: Claude tool-call for 12 scenes
 components/
   studio/                             Stage state machine + step components
@@ -175,7 +175,7 @@ Just paste these into the Claude Code prompt:
 
 #### Add a video pack
 
-> Add a new "Motion" pack that uses Luma's video generation endpoint instead of image. Each scene generates a 5-second clip. Reuse character_ref the same way. Show videos in the gallery with play-on-hover.
+> Add a new "Motion" pack that uses Luma's video generation endpoint instead of image. Each scene generates a 5-second clip. Reuse image_ref the same way. Show videos in the gallery with play-on-hover.
 
 #### Migrate storage
 
@@ -201,9 +201,9 @@ A few decisions worth knowing if you're hacking on this.
 
 **Direct browser uploads.** `/api/upload` uses `handleUpload` from `@vercel/blob/client`, returning a one-shot upload token to the browser. The file streams directly from the browser to Blob, bypassing Vercel's 4.5 MB serverless body limit (cap is 100 MB).
 
-**Face lock.** Every Luma call sends `character_ref: { identity0: { images: [...refs], weight: 0.95 } }`. Up to 4 reference images per identity per [Luma's docs](https://docs.lumalabs.ai/docs/image-generation).
+**Face lock.** Every Luma call sends `image_ref: [{ url: ref1 }, ...]` with up to 9 reference images. The Luma Agents API uses `image_ref` for both style and identity guidance.
 
-**Edit pattern.** `modify_image_ref` with weight 0.05 + the original `character_ref` keeps composition stable while letting the prompt move only what you ask. Each edit becomes a new variant alongside the original.
+**Edit pattern.** Edits use `type: "image_edit"` + `source: { url }` (the image being edited) + `image_ref` (the original face references). The model preserves what you don't ask to change. Each edit becomes a new variant alongside the original.
 
 ---
 
