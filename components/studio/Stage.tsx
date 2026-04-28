@@ -135,21 +135,40 @@ export function Stage({ initialManifest }: Props) {
   }
 
   async function fanOutGenerations(shootId: string, count: number) {
-    await Promise.allSettled(
-      Array.from({ length: count }, (_, i) =>
-        fetch(`/api/shoots/${shootId}/generate/${i}`, {
+    const CONCURRENCY = 4;
+    const STAGGER_MS = 700;
+    const queue = Array.from({ length: count }, (_, i) => i);
+    let nextStartAt = 0;
+
+    async function runOne(i: number) {
+      const wait = Math.max(0, nextStartAt - Date.now());
+      nextStartAt = Math.max(nextStartAt, Date.now()) + STAGGER_MS;
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      try {
+        const r = await fetch(`/api/shoots/${shootId}/generate/${i}`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-        }).then(async (r) => {
-          if (!r.ok) {
-            const data = (await r.json().catch(() => ({}))) as { error?: string };
-            console.warn(`Scene ${i + 1} failed:`, data.error);
-          }
-        }).catch((err) => {
-          console.warn(`Scene ${i + 1} threw:`, err);
-        })
-      )
+        });
+        if (!r.ok) {
+          const data = (await r.json().catch(() => ({}))) as { error?: string };
+          console.warn(`Scene ${i + 1} failed:`, data.error);
+        }
+      } catch (err) {
+        console.warn(`Scene ${i + 1} threw:`, err);
+      }
+    }
+
+    const workers = Array.from(
+      { length: Math.min(CONCURRENCY, count) },
+      async () => {
+        while (queue.length > 0) {
+          const i = queue.shift();
+          if (i === undefined) break;
+          await runOne(i);
+        }
+      }
     );
+    await Promise.all(workers);
   }
 
   async function hydrateManifest(id: string) {
