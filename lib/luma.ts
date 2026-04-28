@@ -11,9 +11,15 @@ export class LumaError extends Error {
   status: number;
   body: string;
   failureCode: string | null;
+  retryAfter: number | null;
   code: "moderation" | "rate_limit" | "auth" | "bad_request" | "server" | "unknown";
 
-  constructor(status: number, body: string, failureCode: string | null = null) {
+  constructor(
+    status: number,
+    body: string,
+    failureCode: string | null = null,
+    retryAfter: number | null = null
+  ) {
     let code: LumaError["code"] = "unknown";
     if (status === 401 || status === 403) code = "auth";
     else if (status === 429) code = "rate_limit";
@@ -26,6 +32,7 @@ export class LumaError extends Error {
     this.status = status;
     this.body = body;
     this.failureCode = failureCode;
+    this.retryAfter = retryAfter;
     this.code = code;
   }
 }
@@ -101,18 +108,31 @@ export async function createImageGeneration(
     body.source = { url: opts.source };
   }
 
-  const res = await fetch(`${LUMA_BASE}/generations`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(body),
-  });
+  const maxAttempts = 6;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch(`${LUMA_BASE}/generations`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
+    if (res.ok) return (await res.json()) as LumaGeneration;
+
     const text = await res.text();
-    throw new LumaError(res.status, text);
-  }
+    const retryAfterHdr = res.headers.get("retry-after");
+    const retryAfter = retryAfterHdr ? Number(retryAfterHdr) : null;
 
-  return (await res.json()) as LumaGeneration;
+    if (res.status === 429 && attempt < maxAttempts) {
+      const baseWait = retryAfter && Number.isFinite(retryAfter) ? retryAfter : 8;
+      const jitter = Math.floor(Math.random() * 1500);
+      const waitMs = baseWait * 1000 + jitter;
+      await new Promise((r) => setTimeout(r, waitMs));
+      continue;
+    }
+
+    throw new LumaError(res.status, text, null, retryAfter);
+  }
+  throw new LumaError(429, "Rate limit retries exhausted", null, null);
 }
 
 export async function getGeneration(id: string): Promise<LumaGeneration> {
