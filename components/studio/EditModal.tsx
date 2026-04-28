@@ -151,14 +151,33 @@ export function EditModal({
                 {visible.label}
               </span>
               {visible.url && (
-                <a
-                  href={visible.url}
-                  download={`luma-${shootId}-${image.index}-${visible.label}.jpg`}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!visible.url) return;
+                    try {
+                      const res = await fetch(visible.url);
+                      if (!res.ok) throw new Error(`Fetch failed (${res.status})`);
+                      const blob = await res.blob();
+                      const objUrl = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = objUrl;
+                      a.download = `luma-${shootId}-${image.index}-${visible.label}.jpg`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
+                    } catch (err) {
+                      toast.error(
+                        err instanceof Error ? err.message : "Download failed"
+                      );
+                    }
+                  }}
                   className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-ink-900/70 text-paper-dim backdrop-blur-md transition hover:text-paper"
                   aria-label="Download"
                 >
                   <Download className="h-3.5 w-3.5" />
-                </a>
+                </button>
               )}
             </div>
 
