@@ -130,6 +130,17 @@ export async function createImageGeneration(
       continue;
     }
 
+    const transientUpstream =
+      res.status === 422 &&
+      /(S3 upload failed|failed to fetch|fetch URL|timed out|timeout|temporarily)/i.test(
+        text
+      );
+    if ((res.status >= 500 || transientUpstream) && attempt < maxAttempts) {
+      const wait = Math.min(2000 * attempt, 10_000) + Math.floor(Math.random() * 800);
+      await new Promise((r) => setTimeout(r, wait));
+      continue;
+    }
+
     throw new LumaError(res.status, text, null, retryAfter);
   }
   throw new LumaError(429, "Rate limit retries exhausted", null, null);
