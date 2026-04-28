@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Pencil, Download, RefreshCw, AlertCircle } from "lucide-react";
+import { Pencil, Download, RefreshCw, AlertCircle, RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AspectRatio, ShootImage } from "@/lib/types";
 
@@ -11,6 +11,8 @@ interface Props {
   aspectRatio: AspectRatio;
   index: number;
   onClick: (image: ShootImage) => void;
+  onRetry?: (image: ShootImage) => void;
+  retrying?: boolean;
 }
 
 const ASPECT_CLASS: Record<AspectRatio, string> = {
@@ -25,7 +27,14 @@ const ASPECT_CLASS: Record<AspectRatio, string> = {
   "3:1": "aspect-[3/1]",
 };
 
-export function ShootCard({ image, aspectRatio, index, onClick }: Props) {
+export function ShootCard({
+  image,
+  aspectRatio,
+  index,
+  onClick,
+  onRetry,
+  retrying,
+}: Props) {
   const [hover, setHover] = useState(false);
   const isReady = image.state === "completed" && image.url;
   const isFailed = image.state === "failed";
@@ -53,11 +62,32 @@ export function ShootCard({ image, aspectRatio, index, onClick }: Props) {
       )}
       {isFailed && (
         <div className="absolute inset-0 grid place-items-center px-6 text-center">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <AlertCircle className="mx-auto h-5 w-5 text-red-400/80" />
-            <p className="text-[11px] text-paper-mute">
+            <p className="text-[11px] text-paper-mute leading-relaxed">
               {image.failureReason ?? "Generation failed"}
             </p>
+            {onRetry && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!retrying) onRetry(image);
+                }}
+                disabled={retrying}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--line-strong)] bg-ink-700/60 px-3 py-1.5 text-[11px] text-paper transition hover:border-paper/40 hover:bg-ink-600 disabled:opacity-50"
+              >
+                {retrying ? (
+                  <>
+                    <RefreshCw className="h-3 w-3 animate-spin" /> retrying
+                  </>
+                ) : (
+                  <>
+                    <RotateCw className="h-3 w-3" /> retry
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       )}

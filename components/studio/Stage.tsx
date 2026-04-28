@@ -67,6 +67,7 @@ export function Stage({ initialManifest }: Props) {
     initialManifest ?? null
   );
   const [editing, setEditing] = useState<ShootImage | null>(null);
+  const [retryingIndices, setRetryingIndices] = useState<Set<number>>(new Set());
 
   const reset = useCallback(() => {
     setStep("upload");
@@ -132,6 +133,49 @@ export function Stage({ initialManifest }: Props) {
     await hydrateManifest(data.id);
     router.push(`/shoots/${data.id}`, { scroll: false });
     void fanOutGenerations(data.id, data.count);
+  }
+
+  async function retryOne(image: ShootImage) {
+    if (!manifest) return;
+    setRetryingIndices((prev) => {
+      const next = new Set(prev);
+      next.add(image.index);
+      return next;
+    });
+    setManifest((m) =>
+      m
+        ? {
+            ...m,
+            images: m.images.map((img) =>
+              img.index === image.index
+                ? { ...img, state: "queued" as const, failureReason: null }
+                : img
+            ),
+          }
+        : m
+    );
+    if (step === "gallery") setStep("generating");
+    try {
+      const res = await fetch(
+        `/api/shoots/${manifest.id}/generate/${image.index}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+        }
+      );
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(data.error ?? "Retry failed");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Retry failed");
+    } finally {
+      setRetryingIndices((prev) => {
+        const next = new Set(prev);
+        next.delete(image.index);
+        return next;
+      });
+    }
   }
 
   async function fanOutGenerations(shootId: string, count: number) {
@@ -349,6 +393,8 @@ export function Stage({ initialManifest }: Props) {
               <ShootView
                 manifest={manifest}
                 onSelect={(img) => setEditing(img)}
+                onRetry={retryOne}
+                retryingIndices={retryingIndices}
                 onNew={reset}
               />
             </motion.section>
@@ -383,10 +429,14 @@ export function Stage({ initialManifest }: Props) {
 function ShootView({
   manifest,
   onSelect,
+  onRetry,
+  retryingIndices,
   onNew,
 }: {
   manifest: ShootManifest;
   onSelect: (img: ShootImage) => void;
+  onRetry: (img: ShootImage) => void;
+  retryingIndices: Set<number>;
   onNew: () => void;
 }) {
   const subtitle =
@@ -419,6 +469,8 @@ function ShootView({
         images={manifest.images}
         aspectRatio={manifest.aspectRatio}
         onSelect={onSelect}
+        onRetry={onRetry}
+        retryingIndices={retryingIndices}
       />
     </div>
   );
