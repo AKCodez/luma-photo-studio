@@ -168,8 +168,8 @@ export async function pollGeneration(
   id: string,
   opts: PollOpts = {}
 ): Promise<LumaGeneration> {
-  const baseInterval = opts.intervalMs ?? 1500;
-  const timeoutMs = opts.timeoutMs ?? 4 * 60 * 1000;
+  const baseInterval = opts.intervalMs ?? 2000;
+  const timeoutMs = opts.timeoutMs ?? 270 * 1000;
   const start = Date.now();
   let interval = baseInterval;
   let lastErr: unknown = null;
