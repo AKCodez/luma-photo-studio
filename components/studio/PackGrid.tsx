@@ -68,7 +68,7 @@ export function PackGrid({ onChoose }: Props) {
 
             <div className="mt-4 flex items-center justify-between">
               <span className="text-[10px] text-paper-mute font-mono">
-                4 scenes
+                12 scenes
               </span>
               <span className="text-[11px] text-paper-mute opacity-0 transition group-hover:opacity-100">
                 Preview
@@ -105,7 +105,7 @@ export function PackGrid({ onChoose }: Props) {
               >
                 <ArrowLeft className="h-3 w-3" /> back to packs
               </button>
-              <span className="cap !text-[9px]">4 scenes · preview</span>
+              <span className="cap !text-[9px]">12 scenes · preview</span>
             </div>
 
             <div className="max-h-[78vh] overflow-y-auto p-6 md:p-8 scrollbar-pretty">
@@ -141,7 +141,7 @@ export function PackGrid({ onChoose }: Props) {
 
             <div className="sticky bottom-0 flex items-center justify-between gap-4 border-t border-[var(--line)] bg-ink-800/95 px-6 py-4 backdrop-blur md:px-8">
               <span className="text-[12px] text-paper-mute hidden md:block">
-                Hit run to fan out 4 generations in parallel.
+                Hit run to fan out 12 generations in parallel.
               </span>
               <button
                 onClick={() => {
