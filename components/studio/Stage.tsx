@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Header } from "./Header";
@@ -68,6 +68,7 @@ export function Stage({ initialManifest }: Props) {
   );
   const [editing, setEditing] = useState<ShootImage | null>(null);
   const [retryingIndices, setRetryingIndices] = useState<Set<number>>(new Set());
+  const [extending, setExtending] = useState(false);
 
   const reset = useCallback(() => {
     setStep("upload");
@@ -178,10 +179,13 @@ export function Stage({ initialManifest }: Props) {
     }
   }
 
-  async function fanOutGenerations(shootId: string, count: number) {
+  async function fanOutGenerationsForIndices(
+    shootId: string,
+    indices: number[]
+  ) {
     const CONCURRENCY = 4;
     const STAGGER_MS = 700;
-    const queue = Array.from({ length: count }, (_, i) => i);
+    const queue = [...indices];
     let nextStartAt = 0;
 
     async function runOne(i: number) {
@@ -203,7 +207,7 @@ export function Stage({ initialManifest }: Props) {
     }
 
     const workers = Array.from(
-      { length: Math.min(CONCURRENCY, count) },
+      { length: Math.min(CONCURRENCY, queue.length) },
       async () => {
         while (queue.length > 0) {
           const i = queue.shift();
@@ -213,6 +217,44 @@ export function Stage({ initialManifest }: Props) {
       }
     );
     await Promise.all(workers);
+  }
+
+  async function fanOutGenerations(shootId: string, count: number) {
+    await fanOutGenerationsForIndices(
+      shootId,
+      Array.from({ length: count }, (_, i) => i)
+    );
+  }
+
+  async function extendShoot() {
+    if (!manifest || extending) return;
+    if (manifest.mode === "custom") {
+      toast.error("Custom shoots can't be auto-extended.");
+      return;
+    }
+    setExtending(true);
+    try {
+      const res = await fetch(`/api/shoots/${manifest.id}/extend`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        toast.error(data.error ?? "Couldn't generate more.");
+        return;
+      }
+      const data = (await res.json()) as { indices: number[] };
+      if (!data.indices || data.indices.length === 0) {
+        toast.error("No new scenes returned.");
+        return;
+      }
+      setStep("generating");
+      void fanOutGenerationsForIndices(manifest.id, data.indices);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't generate more.");
+    } finally {
+      setExtending(false);
+    }
   }
 
   async function hydrateManifest(id: string) {
@@ -395,6 +437,8 @@ export function Stage({ initialManifest }: Props) {
                 onSelect={(img) => setEditing(img)}
                 onRetry={retryOne}
                 retryingIndices={retryingIndices}
+                onExtend={extendShoot}
+                extending={extending}
                 onNew={reset}
               />
             </motion.section>
@@ -431,12 +475,16 @@ function ShootView({
   onSelect,
   onRetry,
   retryingIndices,
+  onExtend,
+  extending,
   onNew,
 }: {
   manifest: ShootManifest;
   onSelect: (img: ShootImage) => void;
   onRetry: (img: ShootImage) => void;
   retryingIndices: Set<number>;
+  onExtend: () => void;
+  extending: boolean;
   onNew: () => void;
 }) {
   const subtitle =
@@ -458,8 +506,19 @@ function ShootView({
             Click any image to edit it in plain English.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <GenerationStatus images={manifest.images} />
+          {manifest.mode !== "custom" && (
+            <Button
+              variant="ember"
+              size="md"
+              onClick={onExtend}
+              disabled={extending}
+            >
+              {extending ? "Adding…" : "Generate 4 more"}
+              {!extending && <Sparkles className="h-3.5 w-3.5" />}
+            </Button>
+          )}
           <Button variant="outline" size="md" onClick={onNew}>
             New shoot <ArrowRight className="h-3.5 w-3.5" />
           </Button>
