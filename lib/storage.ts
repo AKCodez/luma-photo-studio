@@ -95,6 +95,7 @@ export async function writeBase(base: ShootBase): Promise<void> {
       addRandomSuffix: false,
       contentType: "application/json",
       allowOverwrite: true,
+      cacheControlMaxAge: 0,
     });
     return;
   }
@@ -108,7 +109,8 @@ export async function readBase(shootId: string): Promise<ShootBase | null> {
   if (useBlob) {
     try {
       const meta = await head(basePath(shootId));
-      const res = await fetch(meta.url, { cache: "no-store" });
+      const url = `${meta.url}${meta.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return null;
       return (await res.json()) as ShootBase;
     } catch {
@@ -136,6 +138,7 @@ export async function writeImageState(
       addRandomSuffix: false,
       contentType: "application/json",
       allowOverwrite: true,
+      cacheControlMaxAge: 0,
     });
     return;
   }
@@ -155,7 +158,8 @@ export async function readImageState(
   if (useBlob) {
     try {
       const meta = await head(imagePath(shootId, index));
-      const res = await fetch(meta.url, { cache: "no-store" });
+      const url = `${meta.url}${meta.url.includes("?") ? "&" : "?"}t=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return null;
       return (await res.json()) as ImageState;
     } catch {
