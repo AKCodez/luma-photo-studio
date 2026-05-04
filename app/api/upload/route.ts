@@ -42,9 +42,6 @@ async function handleClientDirectUpload(req: NextRequest) {
         maximumSizeInBytes: 100 * 1024 * 1024,
         tokenPayload: JSON.stringify({ pathname }),
       }),
-      onUploadCompleted: async () => {
-        // no-op; blob is already stored
-      },
     });
     return NextResponse.json(result);
   } catch (err) {
